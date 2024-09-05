@@ -1,44 +1,46 @@
 /****************************
 * Program Name: shell.cpp
-* Purpose:	implement a basic shell USER_ID interface with the following cmd
-*		help: 	 gives list of commands
-*		historyArray: gives list of the last 5 child processes
-*		exit:	 terminates program
-*		etc. other commands from built in shell
-* Author:	Xander Palermo <ajp2s@missouristate.edu>
-* Date:		4 September 2024
+* Purpose:	    a basic shell interface that supports the execution of other programs
+*               and a series of built-in functions, as specified below:
+*		            help: 	 gives list of commands
+*		            history: gives list of the last 5 child processes
+*		            exit:	 terminates program
+*		            etc. other commands execvp()
+* Author:	    Xander Palermo <ajp2s@missouristate.edu>
+* Date:		    4 September 2024
 *****************************/
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
 #include <iostream>
 #include <cstring>
 
-//includes historyArray class to manage historyArray cmd
+//includes a history class to manage the history of the cmd
 #include "history.cpp"
 
 using namespace std;
 int main(){
 
+    //init constants that are used throughout main()
     const string USER_ID = "ajp2s$ ";
     const int BUFFER_SIZE = 25;
     const int MAX_ARGS = 10;
-    History history;
-    History* historyPtr = &history;
 
-    // init arrays to store user input for the cmd and args
+    //init a history object that will keep track of the history of children pids
+    History history;
+
+    //init arrays to store user input for the cmd and args
     char cmd[BUFFER_SIZE];
     char *args[MAX_ARGS]; // = {cmd, nullptr};
 
-    // init values of predetermined inputs that the shell will handle independently
+    //init values of predetermined inputs that the shell will handle independently
     const char noInput[2] = "\0";
     const char exitPhrase[5] = "exit";
     const char helpPhrase[5] = "help";
     const char historyPhrase[8] = "history";
 
-    //loops until interrupted by user (when exit is received)
+    //loops continuously until interrupted by user (when exit is received)
     while (true) {
         cout << USER_ID;
         cin.getline(cmd, BUFFER_SIZE);
@@ -75,37 +77,36 @@ int main(){
             int index = 0;
             char *ptr = cmd;
 
-
+            // format cmd/args, so it can be passed to execvp()
             for(; index < MAX_ARGS-1 && *ptr;) {
-                //when encountering a space, replaces it with a null terminator and moves on
+                //when encountering a space (' '), replaces it with a null terminator and moves on to the next char
                 if ( *ptr == ' ' ) {
                     *ptr = '\0';
                     ptr++;
                     continue;
-                //when counter \n, reached the end of user supplied input
+                //when counter '\n', reached the end of user supplied input
                 } else if ( *ptr == '\n') {
                     break;
                 } //end if/else
 
-                //set args to point to beginning of arg in the cmd sequence and move on
+                //set next index of args to point to beginning of a string in the cmd sequence and move on
                 args[index] = ptr;
                 index++;
                 ptr++;
 
-                //move to end of the word
+                //move pointer to end of the word (till it encounters a space (' ') or a '\n'
                 while(*ptr && *ptr != ' ' && *ptr != '\n') {
                     ptr++;
                 }
 
             }
-            //adds a nullptr at the end of the args to signify no more args
+            //adds a nullptr at the end of the args to signify to execvp() that there are no more args
             args[index] = nullptr;
-
 
             // Initiate child to run given command
             pid_t pid;
-
             history.save(pid = fork());
+
             if ( pid < 0 ){ //catch if fork was unsuccessful
                 cout << "Fork Failed!" << endl;
                 return 1;

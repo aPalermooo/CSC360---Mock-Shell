@@ -1,8 +1,8 @@
 /****************************
 * Program Name: historyArray.cpp
-* Purpose:	manage the historyArray of the last 5 child processes called in shell.cpp
-* Author:	Xander Palermo <ajp2s@missouristate.edu>
-* Date:		4 September 2024
+* Purpose:	    manage the history of the last 5 child process ids created in shell.cpp
+* Author:	    Xander Palermo <ajp2s@missouristate.edu>
+* Date:		    4 September 2024
 *****************************/
 
 #include <iostream>
@@ -13,7 +13,7 @@ using namespace std;
 class History {
     /************************************
      * @class History
-     * @brief stores the history of the last 5 children pid_t from main()
+     * @brief manage the history of the last 5 child process ids created in shell.cpp
      *************************************/
     private:
         static const unsigned short MAX_HISTORY_SIZE = 5;
@@ -22,7 +22,7 @@ class History {
 
     public:
 
-        History () = default; // constructor
+        History () = default; // default constructor
 
         int save (pid_t entry) {
             /*************************************
@@ -30,6 +30,7 @@ class History {
             * @param entry pid_t to be saved to history
             * @return 0
             *************************************/
+
             historyVector.insert(historyVector.begin(),entry);
             if (historyVector.size() > MAX_HISTORY_SIZE) { //ensure historyVector ALWAYS has 5 entries
                 historyVector.pop_back(); //delete the oldest entry
