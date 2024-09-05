@@ -1,8 +1,8 @@
 /****************************
-* Program Name: Shell.cpp
+* Program Name: shell.cpp
 * Purpose:	implement a basic shell USER_ID interface with the following cmd
 *		help: 	 gives list of commands
-*		history: gives list of the last 5 child processes
+*		historyArray: gives list of the last 5 child processes
 *		exit:	 terminates program
 *		etc. other commands from built in shell
 * Author:	Xander Palermo <ajp2s@missouristate.edu>
@@ -16,6 +16,8 @@
 #include <iostream>
 #include <cstring>
 
+//includes historyArray class to manage historyArray cmd
+#include "history.cpp"
 
 using namespace std;
 int main(){
@@ -23,6 +25,8 @@ int main(){
     const string USER_ID = "ajp2s$ ";
     const int BUFFER_SIZE = 25;
     const int MAX_ARGS = 10;
+    History history;
+    History* historyPtr = &history;
 
     // init arrays to store user input for the cmd and args
     char cmd[BUFFER_SIZE];
@@ -56,12 +60,12 @@ int main(){
             cout << "\t XANDER PALERMO" << endl;
             cout << "\t CSC360/660 Operating Systems" << endl;
             cout << "\t Project #1 My Shell - Writing Your Own Shell" << endl;
-            cout << "\t This shell supports the following commands: help, exit, history" << endl;
+            cout << "\t This shell supports the following commands: help, exit, historyArray" << endl;
             cout << endl;
             cout << "**************************************************" << endl;
             continue;
         } else if (strcmp(cmd,historyPhrase) == 0) {
-            cout << "history";
+            history.call();
             continue;
 
 
@@ -101,14 +105,14 @@ int main(){
             // Initiate child to run given command
             pid_t pid;
 
-            pid = fork();
+            history.save(pid = fork());
             if ( pid < 0 ){ //catch if fork was unsuccessful
                 cout << "Fork Failed!" << endl;
                 return 1;
             } else if ( pid == 0 ) { //instructions to child process
-                //TODO:CALL HISTORY SAVE
-                if (execvp(cmd,args) == -1) { //catch if statement cannot be executed
+                if ( execvp(cmd,args) == -1 ) { //catch if statement cannot be executed
                     cout << "Error: Command could not be executed" << endl;
+                    return 0;
                 } //end if
             } else { //instructions to parent process
                 wait(nullptr); //wait until child is finished
@@ -116,11 +120,3 @@ int main(){
         }
     }//end while
 }//end main
-//TODO: Create History class with methods
-//	init:	create history object
-//	push:	append new value to the class
-//	display:prints history in console
-//
-//	Implementation:	use an array and append from bottom and
-//			bubble values up from bottom
-//			init base array with values of -1 for efficiency
